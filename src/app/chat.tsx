@@ -12,6 +12,7 @@ import {
     View
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 
 interface Message {
     id: string;
@@ -39,6 +40,7 @@ const ChatScreen = () => {
             'keyboardDidHide',
             () => {
                 setKeyboardVisible(false);
+                setTimeout(() => flatListRef.current?.scrollToEnd({animated: false}), 100);
             }
         );
 
@@ -104,11 +106,11 @@ const ChatScreen = () => {
     );
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-            <KeyboardAvoidingView
-                style={styles.keyboardAvoidingContainer}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        <SafeAreaView style={styles.container} edges={keyboardVisible ? ['top' ] : ['top', 'bottom']}>
+            <KeyboardAwareScrollView
+                bottomOffset={62}
+                style={{flex: 1}}
+                contentContainerStyle={styles.container}
             >
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Chat as {username}</Text>
@@ -135,7 +137,7 @@ const ChatScreen = () => {
                     }}
                 />
                 {renderInputComponent()}
-            </KeyboardAvoidingView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 };

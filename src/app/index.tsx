@@ -18,7 +18,7 @@ const Home = () => {
     return (
         <KeyboardAwareScrollView
             bottomOffset={62}
-            style={{flex: 1, marginBottom: 62}}
+            style={{flex: 1}}
             contentContainerStyle={styles.container}
         >
             <SafeAreaView style={styles.container}>
