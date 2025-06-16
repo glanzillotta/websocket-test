@@ -1,19 +1,9 @@
 import {useLocalSearchParams} from 'expo-router';
 import React, {useEffect, useRef, useState} from 'react';
-import {
-    FlatList,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
-} from 'react-native';
+import {FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import MessageBubble from "@/components/MessageBubble";
+import {KeyboardAvoidingView} from "react-native-keyboard-controller";
 
 interface Message {
     id: string;
@@ -66,7 +56,7 @@ const ChatScreen = () => {
     };
 
     const renderMessage = ({item}: { item: Message }) => (
-        <MessageBubble message={item} currentUser={username} />
+        <MessageBubble message={item} currentUser={username}/>
     );
 
     const renderInputComponent = () => (
@@ -88,11 +78,10 @@ const ChatScreen = () => {
     );
 
     return (
-        <SafeAreaView style={styles.container} edges={keyboardVisible ? ['top' ] : ['top', 'bottom']}>
-            <KeyboardAwareScrollView
-                bottomOffset={62}
-                style={{flex: 1}}
-                contentContainerStyle={styles.container}
+        <SafeAreaView style={styles.container} edges={keyboardVisible ? ['top'] : ['top', 'bottom']}>
+            <KeyboardAvoidingView
+                behavior='padding'
+                style={styles.container}
             >
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Chat as {username}</Text>
@@ -107,6 +96,8 @@ const ChatScreen = () => {
                     contentContainerStyle={styles.messageListContent}
                     ListFooterComponent={<View style={{height: 10}}/>}
                     inverted
+                    keyboardDismissMode="on-drag"
+                    keyboardShouldPersistTaps="handled"
                     onContentSizeChange={() => {
                         if (messages.length > 0) {
                             flatListRef.current?.scrollToEnd({animated: true});
@@ -119,7 +110,7 @@ const ChatScreen = () => {
                     }}
                 />
                 {renderInputComponent()}
-            </KeyboardAwareScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
