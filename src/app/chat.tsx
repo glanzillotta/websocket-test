@@ -96,18 +96,8 @@ const ChatScreen = () => {
                     contentContainerStyle={styles.messageListContent}
                     ListFooterComponent={<View style={{height: 10}}/>}
                     inverted
-                    keyboardDismissMode="on-drag"
+                    keyboardDismissMode="none"
                     keyboardShouldPersistTaps="handled"
-                    onContentSizeChange={() => {
-                        if (messages.length > 0) {
-                            flatListRef.current?.scrollToEnd({animated: true});
-                        }
-                    }}
-                    onLayout={() => {
-                        if (messages.length > 0) {
-                            flatListRef.current?.scrollToEnd({animated: false});
-                        }
-                    }}
                 />
                 {renderInputComponent()}
             </KeyboardAvoidingView>
