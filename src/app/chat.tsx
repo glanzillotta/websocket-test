@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
+import MessageBubble from "@/components/MessageBubble";
 
 interface Message {
     id: string;
@@ -65,26 +66,7 @@ const ChatScreen = () => {
     };
 
     const renderMessage = ({item}: { item: Message }) => (
-        <View
-            style={[
-                styles.messageContainer,
-                item.sender === username ? styles.myMessage : styles.otherMessage,
-            ]}
-        >
-            <Text style={styles.senderName}>{item.sender}</Text>
-            <Text style={[
-                styles.messageText,
-                item.sender === username ? styles.myMessageText : styles.otherMessageText
-            ]}>
-                {item.text}
-            </Text>
-            <Text style={[
-                styles.timestamp,
-                item.sender === username ? styles.myTimestamp : styles.otherTimestamp
-            ]}>
-                {item.timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-            </Text>
-        </View>
+        <MessageBubble message={item} currentUser={username} />
     );
 
     const renderInputComponent = () => (
