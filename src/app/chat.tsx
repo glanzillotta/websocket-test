@@ -1,14 +1,17 @@
-import { useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import {useLocalSearchParams} from 'expo-router';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     FlatList,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 interface Message {
     id: string;
@@ -18,9 +21,32 @@ interface Message {
 }
 
 const ChatScreen = () => {
-    const { username } = useLocalSearchParams<{ username: string }>();
+    const {username} = useLocalSearchParams<{ username: string }>();
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState('');
+    const flatListRef = useRef<FlatList>(null);
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener(
+            'keyboardDidShow',
+            () => {
+                setKeyboardVisible(true);
+                flatListRef.current?.scrollToEnd({animated: true});
+            }
+        );
+        const keyboardDidHideListener = Keyboard.addListener(
+            'keyboardDidHide',
+            () => {
+                setKeyboardVisible(false);
+            }
+        );
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
 
     const sendMessage = () => {
         if (inputText.trim() === '') return;
@@ -32,12 +58,12 @@ const ChatScreen = () => {
             timestamp: new Date(),
         };
 
-        setMessages([...messages, newMessage]);
+        setMessages([newMessage, ...messages]);
         setInputText('');
     };
 
-    const renderMessage = ({ item }: { item: Message }) => (
-        <SafeAreaView
+    const renderMessage = ({item}: { item: Message }) => (
+        <View
             style={[
                 styles.messageContainer,
                 item.sender === username ? styles.myMessage : styles.otherMessage,
@@ -54,35 +80,62 @@ const ChatScreen = () => {
                 styles.timestamp,
                 item.sender === username ? styles.myTimestamp : styles.otherTimestamp
             ]}>
-                {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {item.timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
             </Text>
-        </SafeAreaView>
+        </View>
+    );
+
+    const renderInputComponent = () => (
+        <View style={styles.inputContainer}>
+            <TextInput
+                style={styles.input}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder="Type a message..."
+                multiline
+                onFocus={() => {
+                    setTimeout(() => flatListRef.current?.scrollToEnd({animated: true}), 200);
+                }}
+            />
+            <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+                <Text style={styles.sendButtonText}>Send</Text>
+            </TouchableOpacity>
+        </View>
     );
 
     return (
-        <SafeAreaView style={styles.container}         >
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Chat as {username}</Text>
-            </View>
-            <FlatList
-                data={messages}
-                renderItem={renderMessage}
-                keyExtractor={(item) => item.id}
-                style={styles.messageList}
-                inverted={false}
-            />
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    value={inputText}
-                    onChangeText={setInputText}
-                    placeholder="Type a message..."
-                    multiline
+        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+            <KeyboardAvoidingView
+                style={styles.keyboardAvoidingContainer}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+            >
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Chat as {username}</Text>
+                </View>
+
+                <FlatList
+                    ref={flatListRef}
+                    data={messages}
+                    renderItem={renderMessage}
+                    keyExtractor={(item) => item.id}
+                    style={styles.messageList}
+                    contentContainerStyle={styles.messageListContent}
+                    ListFooterComponent={<View style={{height: 10}}/>}
+                    inverted
+                    onContentSizeChange={() => {
+                        if (messages.length > 0) {
+                            flatListRef.current?.scrollToEnd({animated: true});
+                        }
+                    }}
+                    onLayout={() => {
+                        if (messages.length > 0) {
+                            flatListRef.current?.scrollToEnd({animated: false});
+                        }
+                    }}
                 />
-                <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-                    <Text style={styles.sendButtonText}>Send</Text>
-                </TouchableOpacity>
-            </View>
+                {renderInputComponent()}
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
@@ -91,6 +144,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
+    },
+    keyboardAvoidingContainer: {
+        flex: 1,
     },
     header: {
         padding: 15,
@@ -105,6 +161,9 @@ const styles = StyleSheet.create({
     messageList: {
         flex: 1,
         padding: 10,
+    },
+    messageListContent: {
+        flexGrow: 1,
     },
     messageContainer: {
         maxWidth: '80%',

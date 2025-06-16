@@ -1,7 +1,8 @@
-import { Button, Image, StyleSheet, Text, TextInput, View, KeyboardAvoidingView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
-import { router } from "expo-router";
+import {Button, Image, StyleSheet, Text, TextInput, View} from "react-native";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {useState} from "react";
+import {router} from "expo-router";
+import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 
 const Home = () => {
     const [username, setUsername] = useState("");
@@ -10,21 +11,22 @@ const Home = () => {
         if (username.trim() === "") return;
         router.push({
             pathname: "/chat",
-            params: { username: username.trim() }
+            params: {username: username.trim()}
         });
     };
 
     return (
-        <KeyboardAvoidingView 
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1 }}
+        <KeyboardAwareScrollView
+            bottomOffset={62}
+            style={{flex: 1, marginBottom: 62}}
+            contentContainerStyle={styles.container}
         >
             <SafeAreaView style={styles.container}>
-                <Image source={require('../assets/images/wired-brain-coffee-logo.png')} />
+                <Image source={require('../assets/images/wired-brain-coffee-logo.png')}/>
                 <View style={styles.inputContainer}>
                     <Text style={styles.title}>Please enter your name</Text>
-                    <TextInput 
-                        placeholder="Enter your name" 
+                    <TextInput
+                        placeholder="Enter your name"
                         style={styles.input}
                         value={username}
                         onChangeText={setUsername}
@@ -32,15 +34,15 @@ const Home = () => {
                         autoCorrect={false}
                     />
                 </View>
-                <Button 
-                    title="Start chatting" 
+                <Button
+                    title="Start chatting"
                     onPress={handleStartChat}
                     disabled={username.trim() === ""}
                 />
             </SafeAreaView>
-        </KeyboardAvoidingView>
-    )
-}
+        </KeyboardAwareScrollView>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
