@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Animated, { FadeInUp, Layout } from 'react-native-reanimated';
+import {StyleSheet, Text} from 'react-native';
+import Animated, {FadeInUp, LinearTransition} from 'react-native-reanimated';
 
 interface MessageProps {
     message: {
@@ -18,7 +17,7 @@ const MessageBubble = ({ message, currentUser }: MessageProps) => {
     return (
         <Animated.View
             entering={FadeInUp.duration(300).springify()}
-            layout={Layout.springify()}
+            layout={LinearTransition}
             style={[
                 styles.messageContainer,
                 isMyMessage ? styles.myMessage : styles.otherMessage,

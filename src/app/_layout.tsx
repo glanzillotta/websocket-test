@@ -5,8 +5,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import {useEffect} from 'react';
 import 'react-native-reanimated';
 import {KeyboardProvider} from 'react-native-keyboard-controller';
-
-import {useColorScheme} from '@/components/useColorScheme';
 import {StatusBar} from "react-native";
 
 export {
@@ -43,13 +41,13 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-const segment = useSegments()
+    const segment = useSegments()
     const page = segment[segment.length - 1];
 
 
     return (
         <>
-            <StatusBar barStyle='light-content' backgroundColor={'chat'.includes(page)  ? '#007AFF' : '#f5f5f5'} />
+            <StatusBar barStyle='light-content' backgroundColor={'chat'.includes(page) ? '#007AFF' : '#f5f5f5'}/>
             <KeyboardProvider>
                 <Stack>
                     <Stack.Screen name="index" options={{headerShown: false}}/>
