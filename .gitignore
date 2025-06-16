@@ -2,9 +2,12 @@
 
 # dependencies
 node_modules/
+package-lock.json
 
 # Expo
 .expo/
+android/
+ios/
 dist/
 web-build/
 expo-env.d.ts
@@ -35,3 +38,8 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+package-lock.json
