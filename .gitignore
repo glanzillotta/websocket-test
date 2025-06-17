@@ -42,4 +42,3 @@ yarn-error.*
 # IDE
 .vscode/
 .idea/
-package-lock.json
