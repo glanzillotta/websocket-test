@@ -4,6 +4,7 @@ import {FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View}
 import {SafeAreaView} from 'react-native-safe-area-context';
 import MessageBubble from "@/components/MessageBubble";
 import {KeyboardAvoidingView} from "react-native-keyboard-controller";
+import useWebSocket from 'react-use-websocket';
 
 interface Message {
     id: string;
@@ -18,6 +19,47 @@ const ChatScreen = () => {
     const [inputText, setInputText] = useState('');
     const flatListRef = useRef<FlatList>(null);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [isConnected, setIsConnected] = useState(false);
+
+    const SOCKET_URL = 'wss://e3b9-37-101-51-118.ngrok-free.app';
+    const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(SOCKET_URL, {
+        onOpen: () => {
+            console.log('WebSocket connesso');
+            sendJsonMessage({
+                type: 'auth',
+                username: username
+            });
+            setIsConnected(true);
+        },
+        onClose: () => {
+            console.log('WebSocket disconnesso');
+            setIsConnected(false);
+        },
+        onError: (event) => console.error('Errore WebSocket:', event),
+        shouldReconnect: () => true,
+        reconnectAttempts: 10,
+        reconnectInterval: 3000,
+    });
+
+    useEffect(() => {
+        if (lastJsonMessage) {
+            // Il server invia messaggi con questo formato: {userId, text, timestamp}
+            const receivedMessage = lastJsonMessage as any;
+
+            if (receivedMessage.userId && receivedMessage.text) {
+                const newMessage: Message = {
+                    id: new Date().getTime().toString(),
+                    text: receivedMessage.text,
+                    sender: receivedMessage.userId,
+                    timestamp: new Date(receivedMessage.timestamp),
+                };
+                setMessages(prevMessages => [...prevMessages, newMessage]);
+
+                // Scorri automaticamente verso il basso
+                setTimeout(() => flatListRef.current?.scrollToEnd({animated: true}), 100);
+            }
+        }
+    }, [lastJsonMessage]);
 
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener(
@@ -42,16 +84,13 @@ const ChatScreen = () => {
     }, []);
 
     const sendMessage = () => {
-        if (inputText.trim() === '') return;
+        if (inputText.trim() === '' || !isConnected) return;
 
-        const newMessage: Message = {
-            id: Date.now().toString(),
-            text: inputText.trim(),
-            sender: username,
-            timestamp: new Date(),
-        };
+        // Invia il messaggio secondo il formato atteso dal server
+        sendJsonMessage({
+            text: inputText.trim()
+        });
 
-        setMessages([newMessage, ...messages]);
         setInputText('');
     };
 
@@ -65,14 +104,14 @@ const ChatScreen = () => {
                 style={styles.input}
                 value={inputText}
                 onChangeText={setInputText}
-                placeholder="Type a message..."
+                placeholder="Scrivi un messaggio..."
                 multiline
                 onFocus={() => {
                     setTimeout(() => flatListRef.current?.scrollToEnd({animated: true}), 200);
                 }}
             />
             <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-                <Text style={styles.sendButtonText}>Send</Text>
+                <Text style={styles.sendButtonText}>Invia</Text>
             </TouchableOpacity>
         </View>
     );
@@ -84,7 +123,9 @@ const ChatScreen = () => {
                 style={styles.container}
             >
                 <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Chat as {username}</Text>
+                    <Text style={styles.headerTitle}>
+                        Chat come {username} {isConnected ? '(Connesso)' : '(Disconnesso)'}
+                    </Text>
                 </View>
 
                 <FlatList
@@ -95,7 +136,7 @@ const ChatScreen = () => {
                     style={styles.messageList}
                     contentContainerStyle={styles.messageListContent}
                     ListFooterComponent={<View style={{height: 10}}/>}
-                    inverted
+                    inverted={false}
                     keyboardDismissMode="none"
                     keyboardShouldPersistTaps="handled"
                 />
