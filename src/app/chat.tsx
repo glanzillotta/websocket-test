@@ -22,7 +22,7 @@ const ChatScreen = () => {
     const [isConnected, setIsConnected] = useState(false);
 
     const SOCKET_URL = 'wss://e3b9-37-101-51-118.ngrok-free.app';
-    const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(SOCKET_URL, {
+    const { sendJsonMessage, lastJsonMessage } = useWebSocket(SOCKET_URL, {
         onOpen: () => {
             console.log('WebSocket connesso');
             sendJsonMessage({
